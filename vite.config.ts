@@ -4,6 +4,11 @@ import { presetUno, presetAttributify, presetIcons } from 'unocss'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': 'src',
+    },
+  },
   plugins: [
     unocss({
       presets: [
