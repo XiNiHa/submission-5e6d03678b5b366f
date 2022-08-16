@@ -1,21 +1,22 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useRef } from 'react'
+import { match, P } from 'ts-pattern'
 import type React from 'react'
 import { useAuthContext } from '@/auth'
-import { match, P } from 'ts-pattern'
 
-type CustomFetch = (
+type CustomFetch = <T>(
   pathname: string,
   auth: boolean,
   init?: RequestInit
-) => Promise<Response | Error>
+) => Promise<ResponseResult<T>>
 
 interface ApiContextProps {
   fetch: CustomFetch
 }
 
 const ApiContext = createContext<ApiContextProps>({
-  fetch: (pathname, _, init) =>
-    fetch(`${import.meta.env.VITE_API_URL as string}${pathname}`, init),
+  fetch: () => {
+    throw new Error('Context provider not found')
+  },
 })
 
 export const ApiProvider: React.FC<React.PropsWithChildren> = ({
@@ -23,7 +24,7 @@ export const ApiProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const authContext = useAuthContext()
 
-  const fetchImpl: CustomFetch = (pathname, auth, init) =>
+  const fetchImpl: CustomFetch = <T,>(pathname: string, auth: boolean, init?: RequestInit) =>
     fetch(`${import.meta.env.VITE_API_URL as string}${pathname}`, {
       ...init,
       headers: {
@@ -33,7 +34,9 @@ export const ApiProvider: React.FC<React.PropsWithChildren> = ({
           ? { Authorization: `Bearer ${authContext.accessToken}` }
           : null),
       },
-    }).catch((e) => e as Error)
+    })
+      .catch((e) => e as Error)
+      .then(handleResponse<T>)
 
   return (
     <ApiContext.Provider value={{ fetch: fetchImpl }}>

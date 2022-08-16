@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { match, P } from 'ts-pattern'
 import * as Cookie from 'es-cookie'
 import type React from 'react'
-import { handleResponse, useApiContext } from '@/api'
+import { useApiContext } from '@/api'
 import * as AlertDialog from '@/components/AlertDialog'
 
 interface LoginSuccessResponse {
@@ -25,10 +25,10 @@ const Login: React.FC = () => {
     const password = formData.get('password')
 
     if (email && password) {
-      const result = await fetch(`/api/login`, false, {
+      const result = await fetch<LoginSuccessResponse>(`/api/login`, false, {
         method: 'POST',
         body: JSON.stringify({ email, password }),
-      }).then(handleResponse<LoginSuccessResponse>)
+      })
 
       match(result)
         .with({ success: { accessToken: P.select() } }, (token) => {
