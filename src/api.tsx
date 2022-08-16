@@ -9,12 +9,26 @@ type CustomFetch = <T>(
   init?: RequestInit
 ) => Promise<ResponseResult<T>>
 
+type SuspenseFetch = <T>(
+  key: string,
+  pathname: string,
+  auth: boolean,
+  init?: RequestInit
+) => {
+  data: ResponseResult<T>
+  clear: () => void
+}
+
 interface ApiContextProps {
   fetch: CustomFetch
+  fetchSuspend: SuspenseFetch
 }
 
 const ApiContext = createContext<ApiContextProps>({
   fetch: () => {
+    throw new Error('Context provider not found')
+  },
+  fetchSuspend: () => {
     throw new Error('Context provider not found')
   },
 })
@@ -22,7 +36,18 @@ const ApiContext = createContext<ApiContextProps>({
 export const ApiProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
+  type CacheState =
+    | {
+        status: 'pending'
+        promise: Promise<unknown>
+      }
+    | {
+        status: 'resolved'
+        data: ResponseResult<unknown>
+      }
+
   const authContext = useAuthContext()
+  const cache = useRef(new Map<string, CacheState>())
 
   const fetchImpl: CustomFetch = <T,>(pathname: string, auth: boolean, init?: RequestInit) =>
     fetch(`${import.meta.env.VITE_API_URL as string}${pathname}`, {
@@ -38,8 +63,33 @@ export const ApiProvider: React.FC<React.PropsWithChildren> = ({
       .catch((e) => e as Error)
       .then(handleResponse<T>)
 
+  const fetchSuspend: SuspenseFetch = <T,>(
+    key: string,
+    ...params: Parameters<CustomFetch>
+  ) => {
+    let current = cache.current.get(key)
+    if (!current) {
+      current = {
+        status: 'pending',
+        promise: fetchImpl(...params).then((data) =>
+          cache.current.set(key, { status: 'resolved', data })
+        ),
+      }
+      cache.current.set(key, current)
+    }
+    switch (current.status) {
+      case 'pending':
+        throw current.promise
+      case 'resolved':
+        return {
+          data: current.data as ResponseResult<T>,
+          clear: () => cache.current.delete(key),
+        }
+    }
+  }
+
   return (
-    <ApiContext.Provider value={{ fetch: fetchImpl }}>
+    <ApiContext.Provider value={{ fetch: fetchImpl, fetchSuspend }}>
       {children}
     </ApiContext.Provider>
   )
