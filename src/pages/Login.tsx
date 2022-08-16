@@ -12,6 +12,7 @@ interface LoginSuccessResponse {
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
+  const [inFlight, setInFlight] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { fetch } = useApiContext()
@@ -19,6 +20,7 @@ const Login: React.FC = () => {
 
   const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setInFlight(true)
 
     const formData = new FormData(e.currentTarget)
     const email = formData.get('email')
@@ -42,6 +44,8 @@ const Login: React.FC = () => {
         .with({ error: { message: P.select() } }, (msg) => setError(msg))
         .run()
     }
+
+    setInFlight(false)
   }
 
   return (
@@ -92,6 +96,7 @@ const Login: React.FC = () => {
             </div>
           </InputRow>
           <button
+            disabled={inFlight}
             uno-m="y-4"
             uno-p="x-12 y-2"
             uno-bg="green-400 hover:green-300"
