@@ -11,6 +11,10 @@ export default defineConfig({
   },
   plugins: [
     unocss({
+      shortcuts: {
+        'flex-col-center': 'flex flex-col items-center justify-center',
+        'input': 'px-4 py-2 border border-gray-300 rounded',
+      },
       presets: [
         presetUno(),
         presetAttributify({ prefix: 'uno-' }),
