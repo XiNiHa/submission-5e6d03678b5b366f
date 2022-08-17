@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { match } from 'ts-pattern'
 import type React from 'react'
+import { useAuthContext } from '@/auth'
 import { useApiContext } from '@/api'
 import * as AlertDialog from '@/components/AlertDialog'
 import SuspenseImage from '@/components/SuspenseImage'
@@ -16,6 +16,7 @@ interface UserInfoResponse {
 const Me: React.FC = () => {
   const [inFlight, setInFlight] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { update: updateToken } = useAuthContext()
   const { fetch, fetchSuspend } = useApiContext()
   const navigate = useNavigate()
 
@@ -28,7 +29,10 @@ const Me: React.FC = () => {
 
     const result = await fetch('/api/logout', true, { method: 'POST' })
     if ('error' in result) setError(result.error.message)
-    else navigate('/login')
+    else {
+      updateToken(null)
+      navigate('/login')
+    }
 
     setInFlight(false)
   }

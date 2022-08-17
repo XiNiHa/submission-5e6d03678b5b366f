@@ -4,7 +4,7 @@ import type React from 'react'
 
 interface AuthContextProps {
   accessToken: string | null
-  update: (accessToken: string) => void
+  update: (accessToken: string | null) => void
 }
 
 const AuthContext = createContext<AuthContextProps>({
@@ -19,11 +19,11 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({
     Cookie.parse(document.cookie).accessToken || null
   )
 
-  const update = (token: string) => {
-    document.cookie = Cookie.encode('accessToken', token, {
+  const update = (token: string | null) => {
+    document.cookie = Cookie.encode('accessToken', token ?? '', {
       secure: true,
       sameSite: 'strict',
-      expires: 1, // d
+      expires: token != null ? 1 /* d */ : new Date(1970),
     })
     setAccessToken(token)
   }
