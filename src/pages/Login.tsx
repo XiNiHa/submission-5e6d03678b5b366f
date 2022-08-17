@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { match, P } from 'ts-pattern'
 import type React from 'react'
 import { useAuthContext } from '@/auth'
 import { useApiContext } from '@/api'
 import usePlane from '@/usePlane'
 import * as AlertDialog from '@/components/AlertDialog'
+import InputRow from '@/components/InputRow'
 
 interface LoginSuccessResponse {
   accessToken: string
@@ -61,40 +62,46 @@ const Login: React.FC = () => {
         <form
           onSubmit={(e) => void onFormSubmit(e)}
           className="flex-col-center"
-          uno-flex="gap-3"
+          uno-flex="gap-5"
         >
-          <InputRow icon="i-bi-envelope" label="이메일">
-            <input
-              type="text"
-              name="email"
-              inputMode="email"
-              required
-              className="input"
-              uno-m="x-2"
-            />
-          </InputRow>
-          <InputRow icon="i-bi-lock" label="비밀번호">
-            <div uno-pos="relative" uno-m="x-2">
+          <div className="flex-col-center" uno-flex="gap-3">
+            <InputRow icon="i-bi-envelope" label="이메일">
               <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
+                type="text"
+                name="email"
+                inputMode="email"
                 required
                 className="input"
+                uno-m="x-2"
               />
-              <button
-                type="button"
-                title={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
-                uno-p="x-3"
-                uno-pos="absolute inset-0 left-auto"
-                onClick={() => setShowPassword((prev) => !prev)}
-              >
-                <div className={showPassword ? 'i-bi-eye-fill' : 'i-bi-eye'} />
-              </button>
-            </div>
-          </InputRow>
+            </InputRow>
+            <InputRow icon="i-bi-lock" label="비밀번호">
+              <div uno-pos="relative" uno-m="x-2">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  required
+                  className="input"
+                />
+                <button
+                  type="button"
+                  title={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                  uno-p="x-3"
+                  uno-pos="absolute inset-0 left-auto"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                >
+                  <div
+                    className={showPassword ? 'i-bi-eye-fill' : 'i-bi-eye'}
+                  />
+                </button>
+              </div>
+            </InputRow>
+          </div>
+          <Link to="/reset" uno-text="gray-500" uno-underline="hover:~">
+            비밀번호 초기화
+          </Link>
           <button
             disabled={inFlight}
-            uno-m="y-4"
             uno-p="x-12 y-2"
             uno-bg="green-400 hover:green-300"
             uno-border="rounded"
@@ -131,18 +138,6 @@ const Login: React.FC = () => {
   )
 }
 
-interface InputRowProps {
-  icon?: string
-  label: string
-  children: React.ReactElement
-}
 
-const InputRow: React.FC<InputRowProps> = ({ icon, label, children }) => (
-  <label uno-w="full" uno-flex="~ gap-2" uno-justify="end" uno-items="center">
-    {icon && <div className={icon} uno-text="gray-500" />}
-    <span uno-text="lg #333">{label}</span>
-    {children}
-  </label>
-)
 
 export default Login

@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import type React from 'react'
 import { AuthProvider } from '@/auth'
 import { ApiProvider } from '@/api'
+import Loader from '@/components/Loader'
 import Login from '@/pages/Login'
 import Me from '@/pages/Me'
-import Loader from '@/components/Loader'
+import Reset from '@/pages/Reset'
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Me />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/reset" element={<Reset />} />
             </Routes>
           </Suspense>
         </BrowserRouter>
