@@ -36,7 +36,7 @@ const Login: React.FC = () => {
       match(result)
         .with({ success: { accessToken: P.select() } }, (token) => {
           updateToken(token)
-          navigate('/me')
+          setTimeout(() => navigate('/'), 0)
         })
         .with({ error: { message: P.select() } }, (msg) => setError(msg))
         .run()

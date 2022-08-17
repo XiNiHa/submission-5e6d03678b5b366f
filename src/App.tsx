@@ -14,8 +14,8 @@ const App: React.FC = () => {
         <BrowserRouter>
           <Suspense fallback={<Loader />}>
             <Routes>
+              <Route path="/" element={<Me />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/me" element={<Me />} />
             </Routes>
           </Suspense>
         </BrowserRouter>
