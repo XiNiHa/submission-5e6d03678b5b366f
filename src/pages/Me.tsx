@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import type React from 'react'
 import { useAuthContext } from '@/auth'
 import { useApiContext } from '@/api'
+import usePlane from '@/usePlane'
 import * as AlertDialog from '@/components/AlertDialog'
 import SuspenseImage from '@/components/SuspenseImage'
 
@@ -14,7 +15,7 @@ interface UserInfoResponse {
 }
 
 const Me: React.FC = () => {
-  const [inFlight, setInFlight] = useState(false)
+  const { inFlight, fly } = usePlane()
   const [error, setError] = useState<string | null>(null)
   const { update: updateToken } = useAuthContext()
   const { fetch, fetchSuspend } = useApiContext()
@@ -24,18 +25,15 @@ const Me: React.FC = () => {
 
   if ('error' in data) return <Navigate to="/login" />
 
-  const logout = async () => {
-    setInFlight(true)
-
-    const result = await fetch('/api/logout', true, { method: 'POST' })
-    if ('error' in result) setError(result.error.message)
-    else {
-      updateToken(null)
-      navigate('/login')
-    }
-
-    setInFlight(false)
-  }
+  const logout = () =>
+    void fly(async () => {
+      const result = await fetch('/api/logout', true, { method: 'POST' })
+      if ('error' in result) setError(result.error.message)
+      else {
+        updateToken(null)
+        navigate('/login')
+      }
+    })
 
   return (
     <div className="flex-col-center" uno-w="full" uno-h="full">

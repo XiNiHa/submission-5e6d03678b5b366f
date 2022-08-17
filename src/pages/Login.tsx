@@ -4,6 +4,7 @@ import { match, P } from 'ts-pattern'
 import type React from 'react'
 import { useAuthContext } from '@/auth'
 import { useApiContext } from '@/api'
+import usePlane from '@/usePlane'
 import * as AlertDialog from '@/components/AlertDialog'
 
 interface LoginSuccessResponse {
@@ -12,37 +13,36 @@ interface LoginSuccessResponse {
 
 const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
-  const [inFlight, setInFlight] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { inFlight, fly } = usePlane()
 
   const { update: updateToken } = useAuthContext()
   const { fetch } = useApiContext()
   const navigate = useNavigate()
 
-  const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setInFlight(true)
 
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get('email')
-    const password = formData.get('password')
+    void fly(async () => {
+      const formData = new FormData(e.currentTarget)
+      const email = formData.get('email')
+      const password = formData.get('password')
 
-    if (email && password) {
-      const result = await fetch<LoginSuccessResponse>(`/api/login`, false, {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      })
-
-      match(result)
-        .with({ success: { accessToken: P.select() } }, (token) => {
-          updateToken(token)
-          setTimeout(() => navigate('/'), 0)
+      if (email && password) {
+        const result = await fetch<LoginSuccessResponse>(`/api/login`, false, {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
         })
-        .with({ error: { message: P.select() } }, (msg) => setError(msg))
-        .run()
-    }
 
-    setInFlight(false)
+        match(result)
+          .with({ success: { accessToken: P.select() } }, (token) => {
+            updateToken(token)
+            setTimeout(() => navigate('/'), 0)
+          })
+          .with({ error: { message: P.select() } }, (msg) => setError(msg))
+          .run()
+      }
+    })
   }
 
   return (
