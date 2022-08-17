@@ -110,7 +110,7 @@ export const handleResponse = async <T,>(
 ): Promise<ResponseResult<T>> => {
   return match(res)
     .with({ status: 200 }, async (res) => ({
-      success: (await res.json()) as T,
+      success: (await res.json().catch(() => ({}))) as T,
     }))
     .with(
       { status: P.number },
