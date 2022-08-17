@@ -1,21 +1,35 @@
-import { createContext, useContext } from 'react'
-import { parse } from 'es-cookie'
+import { createContext, useContext, useState } from 'react'
+import * as Cookie from 'es-cookie'
 import type React from 'react'
 
 interface AuthContextProps {
   accessToken: string | null
+  update: (accessToken: string) => void
 }
 
-const AuthContext = createContext<AuthContextProps>({ accessToken: null })
+const AuthContext = createContext<AuthContextProps>({
+  accessToken: null,
+  update: () => void 0,
+})
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const cookie = parse(document.cookie)
-  const accessToken = cookie.accessToken || null
+  const [accessToken, setAccessToken] = useState(
+    Cookie.parse(document.cookie).accessToken || null
+  )
+
+  const update = (token: string) => {
+    document.cookie = Cookie.encode('accessToken', token, {
+      secure: true,
+      sameSite: 'strict',
+      expires: 1, // d
+    })
+    setAccessToken(token)
+  }
 
   return (
-    <AuthContext.Provider value={{ accessToken }}>
+    <AuthContext.Provider value={{ accessToken, update }}>
       {children}
     </AuthContext.Provider>
   )

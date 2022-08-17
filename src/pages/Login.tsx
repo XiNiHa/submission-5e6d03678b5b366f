@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { match, P } from 'ts-pattern'
-import * as Cookie from 'es-cookie'
 import type React from 'react'
+import { useAuthContext } from '@/auth'
 import { useApiContext } from '@/api'
 import * as AlertDialog from '@/components/AlertDialog'
 
@@ -15,6 +15,7 @@ const Login: React.FC = () => {
   const [inFlight, setInFlight] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const { update: updateToken } = useAuthContext()
   const { fetch } = useApiContext()
   const navigate = useNavigate()
 
@@ -34,11 +35,7 @@ const Login: React.FC = () => {
 
       match(result)
         .with({ success: { accessToken: P.select() } }, (token) => {
-          document.cookie = Cookie.encode('accessToken', token, {
-            secure: true,
-            sameSite: 'strict',
-            expires: 1, // d
-          })
+          updateToken(token)
           navigate('/me')
         })
         .with({ error: { message: P.select() } }, (msg) => setError(msg))
